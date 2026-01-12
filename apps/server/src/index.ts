@@ -45,6 +45,7 @@ import {
   isTerminalPasswordRequired,
 } from './routes/terminal/index.js';
 import { createSettingsRoutes } from './routes/settings/index.js';
+import { createStatusHandler } from './routes/settings/routes/status.js';
 import { AgentService } from './services/agent-service.js';
 import { FeatureLoader } from './services/feature-loader.js';
 import { AutoModeService } from './services/auto-mode-service.js';
@@ -191,6 +192,9 @@ app.use('/api', requireJsonContentType);
 // Mount API routes - health and auth are unauthenticated
 app.use('/api/health', createHealthRoutes());
 app.use('/api/auth', createAuthRoutes());
+
+// Settings status is public to allow checking migration state during onboarding
+app.get('/api/settings/status', createStatusHandler(settingsService));
 
 // Apply authentication to all other routes
 app.use('/api', authMiddleware);

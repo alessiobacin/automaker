@@ -795,6 +795,9 @@ export interface AppActions {
   setPhaseModel: (phase: PhaseModelKey, entry: PhaseModelEntry) => Promise<void>;
   setPhaseModels: (models: Partial<PhaseModelConfig>) => Promise<void>;
   resetPhaseModels: () => Promise<void>;
+  resetToProviderPreset: (
+    preset: 'claude' | 'cursor' | 'codex' | 'opencode' | 'openrouter' | 'openrouter-free'
+  ) => Promise<void>;
   toggleFavoriteModel: (modelId: string) => void;
 
   // Cursor CLI Settings actions
@@ -1678,6 +1681,53 @@ export const useAppStore = create<AppState & AppActions>()(
       },
       resetPhaseModels: async () => {
         set({ phaseModels: DEFAULT_PHASE_MODELS });
+        // Sync to server settings file
+        const { syncSettingsToServer } = await import('@/hooks/use-settings-migration');
+        await syncSettingsToServer();
+      },
+      resetToProviderPreset: async (preset) => {
+        const {
+          CLAUDE_PRESET,
+          CURSOR_PRESET,
+          CODEX_PRESET,
+          OPENCODE_PRESET,
+          OPENROUTER_PRESET,
+          OPENROUTER_FREE_PRESET,
+          DEFAULT_PHASE_MODELS,
+        } = await import('@automaker/types');
+
+        let presetConfig: PhaseModelConfig;
+        switch (preset) {
+          case 'claude':
+            presetConfig = CLAUDE_PRESET;
+            break;
+          case 'cursor':
+            presetConfig = CURSOR_PRESET;
+            break;
+          case 'codex':
+            presetConfig = CODEX_PRESET;
+            break;
+          case 'opencode':
+            presetConfig = OPENCODE_PRESET;
+            break;
+          case 'openrouter':
+            presetConfig = OPENROUTER_PRESET;
+            break;
+          case 'openrouter-free':
+            presetConfig = OPENROUTER_FREE_PRESET;
+            break;
+          default:
+            presetConfig = DEFAULT_PHASE_MODELS;
+        }
+
+        if (!presetConfig) {
+          console.error('❌ Failed to load preset config for:', preset);
+          return;
+        }
+
+        // Deep clone to ensure React/Zustand detects the change
+        const clonedPreset = JSON.parse(JSON.stringify(presetConfig)) as PhaseModelConfig;
+        set({ phaseModels: clonedPreset });
         // Sync to server settings file
         const { syncSettingsToServer } = await import('@/hooks/use-settings-migration');
         await syncSettingsToServer();

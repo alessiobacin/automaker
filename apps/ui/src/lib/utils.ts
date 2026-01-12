@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { ModelAlias } from '@/store/app-store';
+import type { ModelProvider } from '@automaker/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,6 +13,43 @@ export function cn(...inputs: ClassValue[]) {
 export function modelSupportsThinking(_model?: ModelAlias | string): boolean {
   // All Claude models support thinking
   return true;
+}
+
+/**
+ * Determine the provider from a model string
+ * Mirrors the logic in apps/server/src/providers/provider-factory.ts
+ */
+export function getProviderFromModel(model?: string): ModelProvider {
+  if (!model) return 'claude';
+
+  // Check for Cursor models (cursor- prefix)
+  if (model.startsWith('cursor-') || model.startsWith('cursor:')) {
+    return 'cursor';
+  }
+
+  // Check for Codex/OpenAI models (codex- prefix, gpt- prefix, or o-series)
+  if (
+    model.startsWith('codex-') ||
+    model.startsWith('codex:') ||
+    model.startsWith('gpt-') ||
+    /^o\d/.test(model)
+  ) {
+    return 'codex';
+  }
+
+  // Check for OpenCode models (opencode/, amazon-bedrock/, openrouter/, etc.)
+  if (
+    model.startsWith('opencode/') ||
+    model.startsWith('amazon-bedrock/') ||
+    model.startsWith('openrouter/') ||
+    model.startsWith('google/') ||
+    model.startsWith('github-copilot/')
+  ) {
+    return 'opencode';
+  }
+
+  // Default to Claude
+  return 'claude';
 }
 
 /**

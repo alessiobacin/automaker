@@ -12,6 +12,8 @@ import { createApiKeysHandler } from './routes/api-keys.js';
 import { createPlatformHandler } from './routes/platform.js';
 import { createVerifyClaudeAuthHandler } from './routes/verify-claude-auth.js';
 import { createGhStatusHandler } from './routes/gh-status.js';
+import { createOpenCodeStatusHandler } from './routes/opencode-status.js';
+import { createCodexStatusHandler } from './routes/codex-status.js';
 import { createCursorStatusHandler } from './routes/cursor-status.js';
 import {
   createGetCursorConfigHandler,
@@ -36,6 +38,11 @@ export function createSetupRoutes(): Router {
   router.get('/platform', createPlatformHandler());
   router.post('/verify-claude-auth', createVerifyClaudeAuthHandler());
   router.get('/gh-status', createGhStatusHandler());
+
+  router.get('/opencode-status', createOpenCodeStatusHandler());
+
+  // Codex CLI route
+  router.get('/codex-status', createCodexStatusHandler());
 
   // Cursor CLI routes
   router.get('/cursor-status', createCursorStatusHandler());

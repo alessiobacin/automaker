@@ -24,6 +24,11 @@ export function createProvidersHandler() {
           method: statuses.cursor?.method,
           authenticated: statuses.cursor?.authenticated,
         },
+        opencode: {
+          available: statuses.opencode?.installed || false,
+          authenticated: statuses.opencode?.authenticated, // We need to populate this in OpenCodeProvider
+          version: statuses.opencode?.version,
+        },
       };
 
       res.json({ success: true, providers });

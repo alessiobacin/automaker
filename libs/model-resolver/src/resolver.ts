@@ -14,9 +14,11 @@ import {
   DEFAULT_MODELS,
   PROVIDER_PREFIXES,
   isCursorModel,
+  isOpencodeModel,
   stripProviderPrefix,
   type PhaseModelEntry,
   type ThinkingLevel,
+  OPENCODE_MODEL_MAP,
 } from '@automaker/types';
 
 /**
@@ -38,6 +40,28 @@ export function resolveModelString(
   if (!modelKey) {
     console.log(`[ModelResolver] No model specified, using default: ${defaultModel}`);
     return defaultModel;
+  }
+
+  // OpenCode model handling - check first since it can use various formats
+  if (isOpencodeModel(modelKey)) {
+    console.log(`[ModelResolver] Detected OpenCode model: ${modelKey}`);
+
+    // If it already has opencode- prefix, pass through
+    if (modelKey.startsWith(PROVIDER_PREFIXES.opencode)) {
+      console.log(`[ModelResolver] Using OpenCode model with prefix: ${modelKey}`);
+      return modelKey;
+    }
+
+    // If it's an OpenCode alias (e.g., "sonnet", "opus"), resolve to full OpenCode model ID
+    if (modelKey in OPENCODE_MODEL_MAP) {
+      const resolved = OPENCODE_MODEL_MAP[modelKey];
+      console.log(`[ModelResolver] Resolved OpenCode model alias: "${modelKey}" -> "${resolved}"`);
+      return resolved;
+    }
+
+    // If it's a full OpenCode model ID (e.g., "opencode/big-pickle", "amazon-bedrock/..."), pass through
+    console.log(`[ModelResolver] Using full OpenCode model ID: ${modelKey}`);
+    return modelKey;
   }
 
   // Cursor model with explicit prefix (e.g., "cursor-composer-1") - pass through unchanged

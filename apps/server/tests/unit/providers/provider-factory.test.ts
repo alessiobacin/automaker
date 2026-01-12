@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ProviderFactory } from '@/providers/provider-factory.js';
 import { ClaudeProvider } from '@/providers/claude-provider.js';
 import { CursorProvider } from '@/providers/cursor-provider.js';
+import { OpenCodeProvider } from '@/providers/opencode-provider.js';
 
 describe('provider-factory.ts', () => {
   let consoleSpy: any;
@@ -141,15 +142,21 @@ describe('provider-factory.ts', () => {
       expect(hasClaudeProvider).toBe(true);
     });
 
-    it('should return exactly 2 providers', () => {
+    it('should return exactly 3 providers', () => {
       const providers = ProviderFactory.getAllProviders();
-      expect(providers).toHaveLength(2);
+      expect(providers).toHaveLength(3);
     });
 
     it('should include CursorProvider', () => {
       const providers = ProviderFactory.getAllProviders();
       const hasCursorProvider = providers.some((p) => p instanceof CursorProvider);
       expect(hasCursorProvider).toBe(true);
+    });
+
+    it('should include OpenCodeProvider', () => {
+      const providers = ProviderFactory.getAllProviders();
+      const hasOpenCodeProvider = providers.some((p) => p instanceof OpenCodeProvider);
+      expect(hasOpenCodeProvider).toBe(true);
     });
 
     it('should create new instances each time', () => {
@@ -179,13 +186,20 @@ describe('provider-factory.ts', () => {
 
       expect(keys).toContain('claude');
       expect(keys).toContain('cursor');
-      expect(keys).toHaveLength(2);
+      expect(keys).toContain('opencode');
+      expect(keys).toHaveLength(3);
     });
 
     it('should include cursor status', async () => {
       const statuses = await ProviderFactory.checkAllProviders();
 
       expect(statuses.cursor).toHaveProperty('installed');
+    });
+
+    it('should include opencode status', async () => {
+      const statuses = await ProviderFactory.checkAllProviders();
+
+      expect(statuses.opencode).toHaveProperty('installed');
     });
   });
 
