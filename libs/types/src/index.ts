@@ -114,6 +114,7 @@ export type {
   BoardBackgroundSettings,
   WorktreeInfo,
   ProjectSettings,
+  ProviderPreset,
 } from './settings.js';
 export {
   DEFAULT_KEYBOARD_SHORTCUTS,

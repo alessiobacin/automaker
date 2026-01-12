@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getHttpApiClient } from '@/lib/http-api-client';
 import { OpenCodeCliStatus, OpenCodeCliStatusSkeleton } from '../cli-status/opencode-cli-status';
+import { CliInstallCommands, OPENCODE_INSTALL_COMMANDS } from '../cli-status/cli-install-commands';
 
 interface OpenCodeStatus {
   installed: boolean;
@@ -104,28 +105,13 @@ export function OpenCodeSettingsTab() {
 
       {/* Installation Instructions */}
       {!status?.installed && (
-        <div className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-card/90 via-card/70 to-card/80 backdrop-blur-xl shadow-sm shadow-black/5">
-          <div className="p-6 border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
-            <h3 className="text-lg font-semibold text-foreground tracking-tight">Installation</h3>
-          </div>
-          <div className="p-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              OpenCode is a multi-provider CLI that supports Anthropic, OpenAI, and OpenRouter.
-            </p>
-            <div className="p-4 rounded-xl border border-border/30 bg-muted/10">
-              <p className="text-sm font-medium text-foreground mb-2">Install via Go:</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded block">
-                go install github.com/opencode-ai/opencode@latest
-              </code>
-            </div>
-            <div className="p-4 rounded-xl border border-border/30 bg-muted/10">
-              <p className="text-sm font-medium text-foreground mb-2">Or via Homebrew:</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded block">
-                brew install opencode-ai/tap/opencode
-              </code>
-            </div>
-          </div>
-        </div>
+        <CliInstallCommands
+          providerName="OpenCode CLI"
+          description="Multi-provider CLI supporting Anthropic, OpenAI, Google, and OpenRouter"
+          commands={OPENCODE_INSTALL_COMMANDS}
+          authCommand="opencode auth login"
+          docsUrl="https://github.com/opencode-ai/opencode"
+        />
       )}
     </div>
   );

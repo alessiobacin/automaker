@@ -85,7 +85,36 @@ async function checkOpenCodeAuth(): Promise<{
     }
   }
 
-  // Check for OpenCode config file
+  // Check for OpenCode auth file (where opencode auth login stores credentials)
+  const authPath = path.join(os.homedir(), '.local', 'share', 'opencode', 'auth.json');
+  if (fs.existsSync(authPath)) {
+    try {
+      const authData = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
+      // Check each provider in auth.json
+      for (const [provider, settings] of Object.entries(authData)) {
+        const providerSettings = settings as { type?: string; key?: string; refresh?: string };
+        // API type with key, or OAuth type with refresh token
+        if (
+          (providerSettings?.type === 'api' && providerSettings?.key) ||
+          (providerSettings?.type === 'oauth' && providerSettings?.refresh)
+        ) {
+          // Normalize provider names
+          const normalizedProvider = provider.toLowerCase().replace('-', '');
+          if (!providers.includes(normalizedProvider) && !providers.includes(provider)) {
+            providers.push(provider);
+          }
+          authenticated = true;
+          if (method === 'none') {
+            method = 'auth.json';
+          }
+        }
+      }
+    } catch {
+      // Auth file parsing failed
+    }
+  }
+
+  // Check for OpenCode config file (legacy path)
   const configPath = path.join(os.homedir(), '.config', 'opencode', 'config.json');
   if (fs.existsSync(configPath)) {
     try {

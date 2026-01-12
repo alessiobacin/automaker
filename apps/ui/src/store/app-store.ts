@@ -16,6 +16,7 @@ import type {
   PipelineConfig,
   PipelineStep,
   PromptCustomization,
+  ProviderPreset,
 } from '@automaker/types';
 import { getAllCursorModelIds, DEFAULT_PHASE_MODELS } from '@automaker/types';
 
@@ -535,6 +536,10 @@ export interface AppState {
     }
   >;
 
+  // Project-level provider preset (per-project, keyed by project path)
+  // When undefined, uses global provider settings
+  projectProviderByPath: Record<string, ProviderPreset>;
+
   // Theme Preview (for hover preview in theme selectors)
   previewTheme: ThemeMode | null;
 
@@ -856,6 +861,10 @@ export interface AppActions {
   setHideScrollbar: (projectPath: string, hide: boolean) => void;
   clearBoardBackground: (projectPath: string) => void;
 
+  // Project Provider actions (per-project provider preset)
+  setProjectProvider: (projectPath: string, provider: ProviderPreset | undefined) => void;
+  getProjectProvider: (projectPath: string) => ProviderPreset | undefined;
+
   // Terminal actions
   setTerminalUnlocked: (unlocked: boolean, token?: string) => void;
   setActiveTerminalSession: (sessionId: string | null) => void;
@@ -1030,6 +1039,7 @@ const initialState: AppState = {
   projectAnalysis: null,
   isAnalyzing: false,
   boardBackgroundByProject: {},
+  projectProviderByPath: {},
   previewTheme: null,
   terminalState: {
     isUnlocked: false,
@@ -2011,6 +2021,27 @@ export const useAppStore = create<AppState & AppActions>()(
             },
           },
         });
+      },
+
+      // Project Provider actions
+      setProjectProvider: (projectPath, provider) => {
+        const current = get().projectProviderByPath;
+        if (provider === undefined) {
+          // Remove the provider setting for this project (use global)
+          const { [projectPath]: _, ...rest } = current;
+          set({ projectProviderByPath: rest });
+        } else {
+          set({
+            projectProviderByPath: {
+              ...current,
+              [projectPath]: provider,
+            },
+          });
+        }
+      },
+
+      getProjectProvider: (projectPath) => {
+        return get().projectProviderByPath[projectPath];
       },
 
       // Terminal actions
@@ -3069,6 +3100,8 @@ export const useAppStore = create<AppState & AppActions>()(
           lastSelectedSessionByProject: state.lastSelectedSessionByProject,
           // Board background settings
           boardBackgroundByProject: state.boardBackgroundByProject,
+          // Project provider settings (per-project)
+          projectProviderByPath: state.projectProviderByPath,
           // Terminal layout persistence (per-project)
           terminalLayoutByProject: state.terminalLayoutByProject,
           // Terminal settings persistence (global)

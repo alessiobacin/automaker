@@ -1,6 +1,87 @@
 import { Button } from '@/components/ui/button';
-import { Code2, CheckCircle2, AlertCircle, RefreshCw, XCircle } from 'lucide-react';
+import {
+  Code2,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  XCircle,
+  Copy,
+  Check,
+  Terminal,
+  Apple,
+  Monitor,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+
+// Default install commands for OpenCode CLI
+const OPENCODE_INSTALL_COMMANDS = [
+  {
+    label: 'macOS (Homebrew)',
+    command: 'brew install opencode-ai/tap/opencode',
+    platform: 'macos' as const,
+  },
+  {
+    label: 'Go Install (All)',
+    command: 'go install github.com/opencode-ai/opencode@latest',
+    platform: 'all' as const,
+  },
+  {
+    label: 'Windows (Scoop)',
+    command:
+      'scoop bucket add opencode https://github.com/opencode-ai/scoop-bucket.git && scoop install opencode',
+    platform: 'windows' as const,
+  },
+];
+
+// Detect OS
+function getOS(): 'macos' | 'windows' | 'linux' | 'unknown' {
+  if (typeof navigator === 'undefined') return 'unknown';
+  const platform = navigator.platform?.toLowerCase() || '';
+  const userAgent = navigator.userAgent?.toLowerCase() || '';
+
+  if (platform.includes('mac') || userAgent.includes('mac')) return 'macos';
+  if (platform.includes('win') || userAgent.includes('win')) return 'windows';
+  if (platform.includes('linux') || userAgent.includes('linux')) return 'linux';
+  return 'unknown';
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
+      className="h-5 w-5 shrink-0 opacity-60 hover:opacity-100"
+      title="Copy to clipboard"
+    >
+      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+    </Button>
+  );
+}
+
+function PlatformIcon({ platform }: { platform?: string }) {
+  switch (platform) {
+    case 'macos':
+      return <Apple className="w-3.5 h-3.5" />;
+    case 'windows':
+      return <Monitor className="w-3.5 h-3.5" />;
+    default:
+      return <Terminal className="w-3.5 h-3.5" />;
+  }
+}
 
 interface OpenCodeStatus {
   installed: boolean;
@@ -133,16 +214,52 @@ export function OpenCodeCliStatus({ status, isChecking, onRefresh }: OpenCodeCli
             {status?.version && (
               <p className="text-sm text-muted-foreground">Version: {status.version}</p>
             )}
-            {!isInstalled && (
-              <p className="text-sm text-muted-foreground">
-                Install via:{' '}
-                <code className="text-xs bg-muted px-1 rounded">
-                  go install github.com/opencode-ai/opencode@latest
-                </code>
-              </p>
-            )}
           </div>
         </div>
+
+        {/* Installation Commands when not installed */}
+        {!isInstalled && (
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-foreground/80">Installation Commands:</p>
+            <div className="space-y-2">
+              {OPENCODE_INSTALL_COMMANDS.map((cmd, idx) => {
+                const currentOS = getOS();
+                const isCurrentOS = cmd.platform === currentOS || cmd.platform === 'all';
+                return (
+                  <div
+                    key={idx}
+                    className={cn(
+                      'p-3 rounded-xl border',
+                      isCurrentOS
+                        ? 'bg-accent/40 border-primary/30'
+                        : 'bg-accent/20 border-border/30'
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-wider">
+                        <PlatformIcon platform={cmd.platform} />
+                        <span className="font-medium">{cmd.label}</span>
+                        {isCurrentOS && currentOS !== 'unknown' && (
+                          <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary text-[9px]">
+                            Your OS
+                          </span>
+                        )}
+                      </div>
+                      <CopyButton text={cmd.command} />
+                    </div>
+                    <code className="text-xs text-foreground/80 font-mono block break-all">
+                      {cmd.command}
+                    </code>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Then authenticate:{' '}
+              <code className="font-mono bg-muted px-1 rounded">opencode auth login</code>
+            </p>
+          </div>
+        )}
 
         {/* Authentication Status */}
         {isInstalled && (

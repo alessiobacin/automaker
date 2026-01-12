@@ -672,6 +672,19 @@ export interface WorktreeInfo {
 }
 
 /**
+ * ProviderPreset - Available provider presets for model configuration
+ *
+ * Each preset maps to a predefined PhaseModelConfig with optimized model selections.
+ */
+export type ProviderPreset =
+  | 'claude'
+  | 'cursor'
+  | 'codex'
+  | 'opencode'
+  | 'openrouter'
+  | 'openrouter-free';
+
+/**
  * ProjectSettings - Project-specific overrides stored in {projectPath}/.automaker/settings.json
  *
  * Allows per-project customization without affecting global settings.
@@ -684,6 +697,14 @@ export interface ProjectSettings {
   // Theme Configuration (project-specific override)
   /** Project theme (undefined = use global setting) */
   theme?: ThemeMode;
+
+  // Provider Configuration
+  /**
+   * Active provider preset for this project (e.g., 'claude', 'openrouter-free')
+   * When set, uses the corresponding preset for all phase models in this project.
+   * undefined = use global phaseModels settings
+   */
+  activeProvider?: ProviderPreset;
 
   // Worktree Management
   /** Project-specific worktree preference override */

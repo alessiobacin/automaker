@@ -9,7 +9,7 @@ import { KeyboardMapDialog } from './settings-view/components/keyboard-map-dialo
 import { DeleteProjectDialog } from './settings-view/components/delete-project-dialog';
 import { SettingsNavigation } from './settings-view/components/settings-navigation';
 import { ApiKeysSection } from './settings-view/api-keys/api-keys-section';
-import { ModelDefaultsSection } from './settings-view/model-defaults';
+import { ModelDefaultsSection, ProjectProviderSection } from './settings-view/model-defaults';
 import { AppearanceSection } from './settings-view/appearance/appearance-section';
 import { TerminalSection } from './settings-view/terminal/terminal-section';
 import { AudioSection } from './settings-view/audio/audio-section';
@@ -105,7 +105,12 @@ export function SettingsView() {
           />
         );
       case 'model-defaults':
-        return <ModelDefaultsSection />;
+        return (
+          <div className="space-y-6">
+            <ProjectProviderSection />
+            <ModelDefaultsSection />
+          </div>
+        );
       case 'appearance':
         return (
           <AppearanceSection

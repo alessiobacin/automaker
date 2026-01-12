@@ -1,14 +1,48 @@
 import { Button } from '@/components/ui/button';
-import { Terminal, CheckCircle2, AlertCircle, RefreshCw, XCircle } from 'lucide-react';
+import { Terminal, CheckCircle2, AlertCircle, RefreshCw, XCircle, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 import type { CliStatus } from '../shared/types';
 import type { ClaudeAuthStatus } from '@/store/setup-store';
+
+// Default install commands for Claude CLI
+const DEFAULT_CLAUDE_INSTALL_COMMANDS = {
+  npm: 'npm install -g @anthropic-ai/claude-code',
+  macos: 'brew install anthropics/claude/claude-code',
+  windows: 'npm install -g @anthropic-ai/claude-code',
+};
 
 interface CliStatusProps {
   status: CliStatus | null;
   authStatus?: ClaudeAuthStatus | null;
   isChecking: boolean;
   onRefresh: () => void;
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
+      className="h-5 w-5 shrink-0 opacity-60 hover:opacity-100"
+      title="Copy to clipboard"
+    >
+      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+    </Button>
+  );
 }
 
 function getAuthMethodLabel(method: string): string {
@@ -199,43 +233,60 @@ export function ClaudeCliStatus({ status, authStatus, isChecking, onRefresh }: C
                 </p>
               </div>
             </div>
-            {status.installCommands && (
-              <div className="space-y-3">
-                <p className="text-xs font-medium text-foreground/80">Installation Commands:</p>
-                <div className="space-y-2">
-                  {status.installCommands.npm && (
-                    <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        npm
-                      </p>
-                      <code className="text-xs text-foreground/80 font-mono break-all">
-                        {status.installCommands.npm}
-                      </code>
-                    </div>
-                  )}
-                  {status.installCommands.macos && (
-                    <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        macOS/Linux
-                      </p>
-                      <code className="text-xs text-foreground/80 font-mono break-all">
-                        {status.installCommands.macos}
-                      </code>
-                    </div>
-                  )}
-                  {status.installCommands.windows && (
-                    <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        Windows (PowerShell)
-                      </p>
-                      <code className="text-xs text-foreground/80 font-mono break-all">
-                        {status.installCommands.windows}
-                      </code>
-                    </div>
-                  )}
+            {/* Use provided commands or fallback to defaults */}
+            {(() => {
+              const commands = status.installCommands || DEFAULT_CLAUDE_INSTALL_COMMANDS;
+              return (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-foreground/80">Installation Commands:</p>
+                  <div className="space-y-2">
+                    {commands.npm && (
+                      <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                            npm (All Platforms)
+                          </p>
+                          <CopyButton text={commands.npm} />
+                        </div>
+                        <code className="text-xs text-foreground/80 font-mono break-all">
+                          {commands.npm}
+                        </code>
+                      </div>
+                    )}
+                    {commands.macos && (
+                      <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                            macOS (Homebrew)
+                          </p>
+                          <CopyButton text={commands.macos} />
+                        </div>
+                        <code className="text-xs text-foreground/80 font-mono break-all">
+                          {commands.macos}
+                        </code>
+                      </div>
+                    )}
+                    {commands.windows && (
+                      <div className="p-3 rounded-xl bg-accent/30 border border-border/50">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                            Windows
+                          </p>
+                          <CopyButton text={commands.windows} />
+                        </div>
+                        <code className="text-xs text-foreground/80 font-mono break-all">
+                          {commands.windows}
+                        </code>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Then authenticate:{' '}
+                    <code className="font-mono bg-muted px-1 rounded">claude login</code>
+                  </p>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>

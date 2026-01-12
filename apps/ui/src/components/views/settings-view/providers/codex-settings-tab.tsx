@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check, X, RefreshCw, Key, Terminal, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CliInstallCommands, CODEX_INSTALL_COMMANDS } from '../cli-status/cli-install-commands';
 
 interface CodexStatus {
   installed: boolean;
@@ -239,26 +240,13 @@ export function CodexSettingsTab() {
 
       {/* Installation Instructions */}
       {!status?.installed && (
-        <div className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-card/90 via-card/70 to-card/80 backdrop-blur-xl shadow-sm shadow-black/5">
-          <div className="p-6 border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
-            <h3 className="text-lg font-semibold text-foreground tracking-tight">Installation</h3>
-          </div>
-          <div className="p-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Codex is OpenAI&apos;s official CLI for agentic coding with GPT models.
-            </p>
-            <div className="p-4 rounded-xl border border-border/30 bg-muted/10">
-              <p className="text-sm font-medium text-foreground mb-2">Install via npm:</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded block">
-                npm install -g @openai/codex
-              </code>
-            </div>
-            <div className="p-4 rounded-xl border border-border/30 bg-muted/10">
-              <p className="text-sm font-medium text-foreground mb-2">Then authenticate:</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded block">codex login</code>
-            </div>
-          </div>
-        </div>
+        <CliInstallCommands
+          providerName="Codex CLI"
+          description="OpenAI's official CLI for agentic coding with GPT models"
+          commands={CODEX_INSTALL_COMMANDS}
+          authCommand="codex login"
+          docsUrl="https://github.com/openai/codex"
+        />
       )}
     </div>
   );
