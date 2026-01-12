@@ -4,6 +4,7 @@ import { useCliStatus } from '../hooks/use-cli-status';
 import { ClaudeCliStatus } from '../cli-status/claude-cli-status';
 import { ClaudeMdSettings } from '../claude/claude-md-settings';
 import { ClaudeUsageSection } from '../api-keys/claude-usage-section';
+import { ProviderApiKeyField } from './provider-api-key-field';
 import { Info } from 'lucide-react';
 
 export function ClaudeSettingsTab() {
@@ -31,6 +32,16 @@ export function ClaudeSettingsTab() {
           </p>
         </div>
       </div>
+
+      {/* API Key */}
+      <ProviderApiKeyField
+        provider="anthropic"
+        label="Anthropic API Key"
+        placeholder="sk-ant-..."
+        description="Used for Claude AI features. Get your key at"
+        linkHref="https://console.anthropic.com/account/keys"
+        linkText="console.anthropic.com"
+      />
 
       <ClaudeCliStatus
         status={claudeCliStatus}

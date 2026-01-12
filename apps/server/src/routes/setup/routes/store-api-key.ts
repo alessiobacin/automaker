@@ -29,10 +29,20 @@ export function createStoreApiKeyHandler() {
         process.env.ANTHROPIC_API_KEY = apiKey;
         await persistApiKeyToEnv('ANTHROPIC_API_KEY', apiKey);
         logger.info('[Setup] Stored API key as ANTHROPIC_API_KEY');
+      } else if (provider === 'openai') {
+        // OpenAI API key for Codex
+        process.env.OPENAI_API_KEY = apiKey;
+        await persistApiKeyToEnv('OPENAI_API_KEY', apiKey);
+        logger.info('[Setup] Stored API key as OPENAI_API_KEY');
+      } else if (provider === 'openrouter') {
+        // OpenRouter API key
+        process.env.OPENROUTER_API_KEY = apiKey;
+        await persistApiKeyToEnv('OPENROUTER_API_KEY', apiKey);
+        logger.info('[Setup] Stored API key as OPENROUTER_API_KEY');
       } else {
         res.status(400).json({
           success: false,
-          error: `Unsupported provider: ${provider}. Only anthropic is supported.`,
+          error: `Unsupported provider: ${provider}. Supported: anthropic, openai, openrouter.`,
         });
         return;
       }

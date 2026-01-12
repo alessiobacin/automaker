@@ -8,6 +8,7 @@ import { KeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { ClaudeUsagePopover } from '@/components/claude-usage-popover';
 import { useAppStore } from '@/store/app-store';
 import { useSetupStore } from '@/store/setup-store';
+import { ProjectProviderSelector } from './project-provider-selector';
 
 interface BoardHeaderProps {
   projectName: string;
@@ -59,6 +60,9 @@ export function BoardHeader({
         <p className="text-sm text-muted-foreground">{projectName}</p>
       </div>
       <div className="flex gap-2 items-center">
+        {/* Project Provider Selector */}
+        {isMounted && <ProjectProviderSelector />}
+
         {/* Usage Popover - only show for CLI users (not API key users) */}
         {isMounted && showUsageTracking && <ClaudeUsagePopover />}
 

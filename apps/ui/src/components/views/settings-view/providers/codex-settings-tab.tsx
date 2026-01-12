@@ -3,11 +3,10 @@ import { toast } from 'sonner';
 import { getHttpApiClient } from '@/lib/http-api-client';
 import { useAppStore } from '@/store/app-store';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Check, X, RefreshCw, Key, Terminal, ExternalLink } from 'lucide-react';
+import { Check, X, RefreshCw, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CliInstallCommands, CODEX_INSTALL_COMMANDS } from '../cli-status/cli-install-commands';
+import { ProviderApiKeyField } from './provider-api-key-field';
 
 interface CodexStatus {
   installed: boolean;
@@ -23,10 +22,7 @@ interface CodexStatus {
 export function CodexSettingsTab() {
   const [status, setStatus] = useState<CodexStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const apiKeys = useAppStore((state) => state.apiKeys);
-  const setApiKeys = useAppStore((state) => state.setApiKeys);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -53,46 +49,6 @@ export function CodexSettingsTab() {
   useEffect(() => {
     loadData();
   }, []);
-
-  const handleSaveApiKey = async () => {
-    if (!apiKeyInput.trim()) {
-      toast.error('Please enter an API key');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const api = getHttpApiClient();
-      await api.setup.storeApiKey('openai', apiKeyInput.trim());
-      setApiKeys({ openai: apiKeyInput.trim() });
-      setApiKeyInput('');
-      toast.success('OpenAI API key saved successfully');
-      await loadData();
-    } catch (error) {
-      console.error('Failed to save API key:', error);
-      toast.error('Failed to save API key');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleRemoveApiKey = async () => {
-    setIsSaving(true);
-    try {
-      const api = getHttpApiClient();
-      await api.setup.deleteApiKey('openai');
-      setApiKeys({ openai: '' });
-      toast.success('OpenAI API key removed');
-      await loadData();
-    } catch (error) {
-      console.error('Failed to remove API key:', error);
-      toast.error('Failed to remove API key');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const hasApiKey = !!apiKeys?.openai || status?.hasApiKey;
 
   if (isLoading) {
     return (
@@ -165,78 +121,14 @@ export function CodexSettingsTab() {
       </div>
 
       {/* API Key Configuration */}
-      <div className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-card/90 via-card/70 to-card/80 backdrop-blur-xl shadow-sm shadow-black/5">
-        <div className="p-6 border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                'w-10 h-10 rounded-xl flex items-center justify-center',
-                hasApiKey ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'
-              )}
-            >
-              <Key className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground tracking-tight">
-                OpenAI API Key
-              </h3>
-              <p className="text-sm text-muted-foreground/80">
-                {hasApiKey ? 'API key configured' : 'Required for Codex CLI'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-4">
-          {hasApiKey ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span className="text-muted-foreground">OpenAI API key is configured</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRemoveApiKey}
-                disabled={isSaving}
-                className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-              >
-                Remove API Key
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="openai-api-key">API Key</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="openai-api-key"
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKeyInput}
-                    onChange={(e) => setApiKeyInput(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleSaveApiKey} disabled={isSaving || !apiKeyInput.trim()}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Get your API key from{' '}
-                <a
-                  href="https://platform.openai.com/api-keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  OpenAI Platform <ExternalLink className="w-3 h-3" />
-                </a>
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProviderApiKeyField
+        provider="openai"
+        label="OpenAI API Key"
+        placeholder="sk-..."
+        description="Required for Codex CLI. Get your key at"
+        linkHref="https://platform.openai.com/api-keys"
+        linkText="OpenAI Platform"
+      />
 
       {/* Installation Instructions */}
       {!status?.installed && (

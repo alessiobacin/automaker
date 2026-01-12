@@ -2995,6 +2995,23 @@ export const useAppStore = create<AppState & AppActions>()(
           };
         }
 
+        // Deep merge phaseModels to ensure any missing/empty fields fall back to defaults
+        if (persisted.phaseModels) {
+          merged.phaseModels = { ...current.phaseModels };
+          for (const key of Object.keys(current.phaseModels) as (keyof PhaseModelConfig)[]) {
+            const persistedEntry = persisted.phaseModels[key];
+            // Only use persisted value if it has a valid model string
+            if (
+              persistedEntry &&
+              typeof persistedEntry.model === 'string' &&
+              persistedEntry.model
+            ) {
+              merged.phaseModels[key] = persistedEntry;
+            }
+            // Otherwise keep the default from current.phaseModels
+          }
+        }
+
         return merged;
       },
       migrate: (persistedState: unknown, version: number) => {

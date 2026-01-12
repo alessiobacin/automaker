@@ -46,13 +46,15 @@ export function createDeleteApiKeyHandler() {
       // Map provider to env key name
       const envKeyMap: Record<string, string> = {
         anthropic: 'ANTHROPIC_API_KEY',
+        openai: 'OPENAI_API_KEY',
+        openrouter: 'OPENROUTER_API_KEY',
       };
 
       const envKey = envKeyMap[provider];
       if (!envKey) {
         res.status(400).json({
           success: false,
-          error: `Unknown provider: ${provider}. Only anthropic is supported.`,
+          error: `Unknown provider: ${provider}. Supported: anthropic, openai, openrouter.`,
         });
         return;
       }
