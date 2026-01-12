@@ -5,6 +5,8 @@ import { router } from './utils/router';
 import { SplashScreen } from './components/splash-screen';
 import { useSettingsMigration } from './hooks/use-settings-migration';
 import { useCursorStatusInit } from './hooks/use-cursor-status-init';
+import { useOpencodeStatusInit } from './hooks/use-opencode-status-init';
+import { useCodexStatusInit } from './hooks/use-codex-status-init';
 import './styles/global.css';
 import './styles/theme-imports';
 
@@ -40,6 +42,12 @@ export default function App() {
 
   // Initialize Cursor CLI status at startup
   useCursorStatusInit();
+
+  // Initialize OpenCode CLI status at startup
+  useOpencodeStatusInit();
+
+  // Initialize Codex CLI status at startup
+  useCodexStatusInit();
 
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('automaker-splash-shown', 'true');

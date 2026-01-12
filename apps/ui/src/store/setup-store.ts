@@ -91,6 +91,12 @@ export interface SetupState {
   // Cursor CLI state
   cursorCliStatus: CursorCliStatus | null;
 
+  // Codex CLI state
+  codexCliStatus: CliStatus | null;
+
+  // OpenCode CLI state
+  opencodeCliStatus: CliStatus | null;
+
   // Setup preferences
   skipClaudeSetup: boolean;
 }
@@ -114,6 +120,12 @@ export interface SetupActions {
 
   // Cursor CLI
   setCursorCliStatus: (status: CursorCliStatus | null) => void;
+
+  // Codex CLI
+  setCodexCliStatus: (status: CliStatus | null) => void;
+
+  // OpenCode CLI
+  setOpencodeCliStatus: (status: CliStatus | null) => void;
 
   // Preferences
   setSkipClaudeSetup: (skip: boolean) => void;
@@ -140,6 +152,8 @@ const initialState: SetupState = {
 
   ghCliStatus: null,
   cursorCliStatus: null,
+  codexCliStatus: null,
+  opencodeCliStatus: null,
 
   skipClaudeSetup: shouldSkipSetup,
 };
@@ -191,6 +205,12 @@ export const useSetupStore = create<SetupState & SetupActions>()(
 
       // Cursor CLI
       setCursorCliStatus: (status) => set({ cursorCliStatus: status }),
+
+      // Codex CLI
+      setCodexCliStatus: (status) => set({ codexCliStatus: status }),
+
+      // OpenCode CLI
+      setOpencodeCliStatus: (status) => set({ opencodeCliStatus: status }),
 
       // Preferences
       setSkipClaudeSetup: (skip) => set({ skipClaudeSetup: skip }),

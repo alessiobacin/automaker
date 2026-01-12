@@ -1,7 +1,17 @@
-import { Workflow, RotateCcw } from 'lucide-react';
+import * as React from 'react';
+import { Workflow, RotateCcw, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/app-store';
+import { useSetupStore } from '@/store/setup-store';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { PhaseModelSelector } from './phase-model-selector';
 import type { PhaseModelKey } from '@automaker/types';
 import { DEFAULT_PHASE_MODELS } from '@automaker/types';
@@ -75,7 +85,8 @@ function PhaseGroup({
   subtitle: string;
   phases: PhaseConfig[];
 }) {
-  const { phaseModels, setPhaseModel } = useAppStore();
+  const phaseModels = useAppStore((state) => state.phaseModels);
+  const setPhaseModel = useAppStore((state) => state.setPhaseModel);
 
   return (
     <div className="space-y-4">
@@ -99,7 +110,44 @@ function PhaseGroup({
 }
 
 export function ModelDefaultsSection() {
-  const { resetPhaseModels } = useAppStore();
+  const resetToProviderPreset = useAppStore((state) => state.resetToProviderPreset);
+  const apiKeys = useAppStore((state) => state.apiKeys);
+
+  // Get provider installation status from setup store
+  const claudeCliStatus = useSetupStore((state) => state.claudeCliStatus);
+  const cursorCliStatus = useSetupStore((state) => state.cursorCliStatus);
+  const codexCliStatus = useSetupStore((state) => state.codexCliStatus);
+  const opencodeCliStatus = useSetupStore((state) => state.opencodeCliStatus);
+
+  // Determine which providers are available
+  const isClaudeAvailable = claudeCliStatus?.installed === true || !!apiKeys?.anthropic;
+  const isCursorAvailable = cursorCliStatus?.installed === true;
+  const isCodexAvailable = codexCliStatus?.installed === true;
+  const isOpencodeAvailable = opencodeCliStatus?.installed === true;
+  // OpenRouter is available through OpenCode CLI
+  const isOpenRouterAvailable = isOpencodeAvailable;
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('[ModelDefaults] Provider Status:', {
+      claude: { status: claudeCliStatus, available: isClaudeAvailable },
+      cursor: { status: cursorCliStatus, available: isCursorAvailable },
+      codex: { status: codexCliStatus, available: isCodexAvailable },
+      opencode: { status: opencodeCliStatus, available: isOpencodeAvailable },
+      openrouter: { available: isOpenRouterAvailable },
+      apiKeys: { anthropic: !!apiKeys?.anthropic },
+    });
+  }, [claudeCliStatus, cursorCliStatus, codexCliStatus, opencodeCliStatus, apiKeys]);
+
+  const handlePresetChange = async (
+    preset: 'claude' | 'cursor' | 'codex' | 'opencode' | 'openrouter' | 'openrouter-free'
+  ) => {
+    await resetToProviderPreset(preset);
+  };
+
+  // Check if any provider is available
+  const hasAnyProvider =
+    isClaudeAvailable || isCursorAvailable || isCodexAvailable || isOpencodeAvailable;
 
   return (
     <div
@@ -126,10 +174,54 @@ export function ModelDefaultsSection() {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={resetPhaseModels} className="gap-2">
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset to Defaults
-          </Button>
+          {hasAnyProvider && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset to Provider
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Choose Provider Preset</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {isClaudeAvailable && (
+                  <DropdownMenuItem onClick={() => handlePresetChange('claude')}>
+                    Reset to Claude Code Models
+                  </DropdownMenuItem>
+                )}
+                {isCursorAvailable && (
+                  <DropdownMenuItem onClick={() => handlePresetChange('cursor')}>
+                    Reset to Cursor Models
+                  </DropdownMenuItem>
+                )}
+                {isCodexAvailable && (
+                  <DropdownMenuItem onClick={() => handlePresetChange('codex')}>
+                    Reset to Codex Models
+                  </DropdownMenuItem>
+                )}
+                {isOpencodeAvailable && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handlePresetChange('opencode')}>
+                      Reset to OpenCode Models
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {isOpenRouterAvailable && (
+                  <>
+                    <DropdownMenuItem onClick={() => handlePresetChange('openrouter')}>
+                      Reset to OpenRouter Models
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handlePresetChange('openrouter-free')}>
+                      Reset to OpenRouter FREE Models
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 

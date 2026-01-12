@@ -1060,6 +1060,33 @@ export class HttpApiClient implements ElectronAPI {
       error?: string;
     }> => this.get('/api/setup/gh-status'),
 
+    // OpenCode CLI methods
+    getOpenCodeStatus: (): Promise<{
+      success: boolean;
+      installed?: boolean;
+      version?: string;
+      path?: string;
+      auth?: {
+        authenticated: boolean;
+        method: string;
+        providers: string[];
+      };
+      error?: string;
+    }> => this.get('/api/setup/opencode-status'),
+
+    // Codex CLI methods
+    getCodexStatus: (): Promise<{
+      success: boolean;
+      installed?: boolean;
+      version?: string;
+      path?: string;
+      auth?: {
+        authenticated: boolean;
+        method: string;
+      };
+      error?: string;
+    }> => this.get('/api/setup/codex-status'),
+
     // Cursor CLI methods
     getCursorStatus: (): Promise<{
       success: boolean;
